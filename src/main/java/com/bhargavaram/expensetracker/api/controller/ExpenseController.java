@@ -1,12 +1,16 @@
 package com.bhargavaram.expensetracker.api.controller;
 
 import com.bhargavaram.expensetracker.api.model.Expense;
+import com.bhargavaram.expensetracker.api.repo.ExpenseRepo;
 import com.bhargavaram.expensetracker.api.service.ExpenseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -15,6 +19,9 @@ public class ExpenseController {
 
     @Autowired
     private ExpenseService expenseService;
+
+    @Autowired
+    private ExpenseRepo expenseRepo;
 
 
     @PostMapping("/add")
@@ -44,5 +51,38 @@ public class ExpenseController {
         }
     }
 
+    @GetMapping("/list")
+    public List<Expense> getExpenses(@RequestParam String filter,
+                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
+        LocalDate today = LocalDate.now();
+        LocalDate start;
+
+        switch (filter.toLowerCase()) {
+
+            case "pastweek":
+                start = today.minusDays(7);
+                return expenseRepo.findByDateBetween(start, today);
+
+            case "pastmonth":
+                start = today.minusMonths(1);
+                return expenseRepo.findByDateBetween(start, today);
+
+            case "past3months":
+                start = today.minusMonths(3);
+                return expenseRepo.findByDateBetween(start, today);
+
+            case "custom":
+                if (startDate != null && endDate != null) {
+                    return expenseRepo.findByDateBetween(startDate, endDate);
+                } else {
+                    throw new IllegalArgumentException("custom filter requires start and end date");
+                }
+
+            default:
+                throw new IllegalArgumentException("Invalid filter type");
+        }
+
+    }
 }
