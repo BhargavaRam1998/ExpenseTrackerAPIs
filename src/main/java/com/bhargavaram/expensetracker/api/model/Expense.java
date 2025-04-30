@@ -1,9 +1,6 @@
 package com.bhargavaram.expensetracker.api.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +13,16 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class Expense {
 
+    public enum Category {
+        GROCERIES,
+        LEISURE,
+        ELECTRONICS,
+        UTILITIES,
+        CLOTHING,
+        HEALTH,
+        OTHERS
+    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +32,12 @@ public class Expense {
 
     private int amount;
 
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     private LocalDate date;
+
+
 
     public int getID() {
         return ID;
@@ -64,11 +74,11 @@ public class Expense {
         this.amount = amount;
     }
 
-    public String getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
