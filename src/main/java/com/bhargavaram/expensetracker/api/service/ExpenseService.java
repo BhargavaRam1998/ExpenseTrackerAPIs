@@ -14,4 +14,16 @@ public class ExpenseService {
     public void addExpense(Expense expense){
         expenseRepo.save(expense);
     }
+
+    public void deleteExpense(int id) {
+       if(expenseRepo.existsById(id)) {
+           expenseRepo.deleteById(id);
+       }
+    }
+
+    public void updateExpense(int id, Expense expense) {
+        if(expenseRepo.existsById(id)) {
+            expense.setID(id);
+        }
+    }
 }
