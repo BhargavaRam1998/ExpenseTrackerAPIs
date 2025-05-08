@@ -1,5 +1,7 @@
 package com.bhargavaram.expensetracker.api.config;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -20,5 +22,23 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            String email = extractEmail(token);
+            return email != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String extractEmail(String token) {
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token);
+        Claims claims = claimsJws.getBody();
+        return claims.getSubject();
     }
 }

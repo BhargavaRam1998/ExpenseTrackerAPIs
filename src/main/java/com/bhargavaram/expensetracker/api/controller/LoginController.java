@@ -35,9 +35,11 @@ public class LoginController {
         if(existingUser.isPresent() && passwordEncoder.matches(user.getPassword(), existingUser.get().getPassword())){
             String token = jwtUtil.generateToken(user.getEmail());
             response.put("token", token);
+            response.put("message", "User logged in successfully!");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            response.put("message", "User is unauthorized!");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
     }
 }

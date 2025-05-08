@@ -1,8 +1,11 @@
 package com.bhargavaram.expensetracker.api.controller;
 
+import com.bhargavaram.expensetracker.api.config.JwtUtil;
 import com.bhargavaram.expensetracker.api.model.Expense;
 import com.bhargavaram.expensetracker.api.repo.ExpenseRepo;
 import com.bhargavaram.expensetracker.api.service.ExpenseService;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -22,9 +25,22 @@ public class ExpenseController {
     @Autowired
     private ExpenseRepo expenseRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     @PostMapping("/add")
-    public ResponseEntity<List<Expense>> addExpense(@RequestBody Expense expense){
+    public ResponseEntity<List<Expense>> addExpense(@RequestBody Expense expense, HttpServletRequest request){
+
+        String token = request.getHeader("Authorization");
+
+        if(token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        if(!jwtUtil.validateToken(token)){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         List<Expense> expenses = expenseService.addExpense(expense);
         return new ResponseEntity<>(expenses, HttpStatus.OK);

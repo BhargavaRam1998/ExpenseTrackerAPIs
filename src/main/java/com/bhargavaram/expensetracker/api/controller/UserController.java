@@ -21,6 +21,7 @@ public class UserController {
         HashMap<String, String> response = userService.addUser(user);
 
         if(response.containsKey("token")){
+            response.put("message", "User created successfully!");
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
