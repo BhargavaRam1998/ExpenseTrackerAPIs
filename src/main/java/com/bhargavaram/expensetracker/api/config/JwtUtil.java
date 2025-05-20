@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -40,5 +41,17 @@ public class JwtUtil {
                 .parseClaimsJws(token);
         Claims claims = claimsJws.getBody();
         return claims.getSubject();
+    }
+
+    public boolean isAuthorized(HttpServletRequest request){
+
+        String token = request.getHeader("Authorization");
+
+        if(token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        return validateToken(token);
+
     }
 }

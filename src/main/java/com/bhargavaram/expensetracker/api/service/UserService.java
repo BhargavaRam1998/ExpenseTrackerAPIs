@@ -3,7 +3,7 @@ package com.bhargavaram.expensetracker.api.service;
 import com.bhargavaram.expensetracker.api.config.JwtUtil;
 import com.bhargavaram.expensetracker.api.model.Users;
 import com.bhargavaram.expensetracker.api.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +11,14 @@ import java.util.HashMap;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepo userRepo;
+    private final UserRepo userRepo;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     public HashMap<String, String> addUser(Users user) {
 

@@ -3,7 +3,7 @@ package com.bhargavaram.expensetracker.api.controller;
 import com.bhargavaram.expensetracker.api.config.JwtUtil;
 import com.bhargavaram.expensetracker.api.model.Users;
 import com.bhargavaram.expensetracker.api.repo.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,15 +17,15 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping
+@RequiredArgsConstructor
 public class LoginController {
 
-    @Autowired
-    private UserRepo userRepo;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserRepo userRepo;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login/user")
     public ResponseEntity<HashMap<String, String>> loginUser(@RequestBody Users user){

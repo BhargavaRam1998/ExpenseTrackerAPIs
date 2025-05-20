@@ -2,7 +2,7 @@ package com.bhargavaram.expensetracker.api.controller;
 
 import com.bhargavaram.expensetracker.api.model.Users;
 import com.bhargavaram.expensetracker.api.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +11,10 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/add")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping("/user")
     public ResponseEntity<HashMap<String, String>> addUser(@RequestBody Users user){

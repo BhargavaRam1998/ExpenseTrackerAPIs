@@ -2,17 +2,17 @@ package com.bhargavaram.expensetracker.api.service;
 
 import com.bhargavaram.expensetracker.api.model.Expense;
 import com.bhargavaram.expensetracker.api.repo.ExpenseRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ExpenseService {
 
-    @Autowired
-    private ExpenseRepo expenseRepo;
+    private final ExpenseRepo expenseRepo;
 
     public List<Expense> addExpense(Expense expense){
 
@@ -42,7 +42,7 @@ public class ExpenseService {
                 expense.setDate(LocalDate.now());
             }
 
-            return expense;
+            return expenseRepo.save(expense);
         } else {
             return null;
         }

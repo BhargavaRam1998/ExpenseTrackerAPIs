@@ -4,9 +4,8 @@ import com.bhargavaram.expensetracker.api.config.JwtUtil;
 import com.bhargavaram.expensetracker.api.model.Expense;
 import com.bhargavaram.expensetracker.api.repo.ExpenseRepo;
 import com.bhargavaram.expensetracker.api.service.ExpenseService;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,28 +16,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/expense/track")
+@RequiredArgsConstructor
 public class ExpenseController {
 
-    @Autowired
-    private ExpenseService expenseService;
+    private final ExpenseService expenseService;
 
-    @Autowired
-    private ExpenseRepo expenseRepo;
+    private final ExpenseRepo expenseRepo;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
 
     @PostMapping("/add")
     public ResponseEntity<List<Expense>> addExpense(@RequestBody Expense expense, HttpServletRequest request){
 
-        String token = request.getHeader("Authorization");
-
-        if(token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        if(!jwtUtil.validateToken(token)){
+        if(!jwtUtil.isAuthorized(request)){
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -47,16 +38,26 @@ public class ExpenseController {
     }
 
     @PutMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteExpense(@PathVariable int id){
+    public ResponseEntity<String> deleteExpense(@PathVariable int id, HttpServletRequest request){
+
+        if(!jwtUtil.isAuthorized(request)){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
         if(expenseService.deleteExpense(id)){
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>("Deleted task with ID: " + id + " successfully!", HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Task ID: " + id + " not found, please enter valid task ID",HttpStatus.NOT_FOUND);
         }
     }
 
     @PutMapping("update/{id}")
-    public ResponseEntity<Expense> updateExpense(@PathVariable int id, @RequestBody Expense expense){
+    public ResponseEntity<Expense> updateExpense(@PathVariable int id, @RequestBody Expense expense, HttpServletRequest request){
+
+        if(!jwtUtil.isAuthorized(request)){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
         Expense updatedExpense = expenseService.updateExpense(id, expense);
 
         if(updatedExpense != null){
@@ -67,9 +68,14 @@ public class ExpenseController {
     }
 
     @GetMapping("/list")
-    public List<Expense> getExpenses(@RequestParam String filter,
+    public ResponseEntity<List<Expense>> getExpenses(@RequestParam String filter,
                                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate, HttpServletRequest request) {
+
+        if(!jwtUtil.isAuthorized(request)){
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
 
         LocalDate today = LocalDate.now();
         LocalDate start;
@@ -78,19 +84,19 @@ public class ExpenseController {
 
             case "pastweek":
                 start = today.minusDays(7);
-                return expenseRepo.findByDateBetween(start, today);
+                return new ResponseEntity<>(expenseRepo.findByDateBetween(start, today), HttpStatus.OK);
 
             case "pastmonth":
                 start = today.minusMonths(1);
-                return expenseRepo.findByDateBetween(start, today);
+                return new ResponseEntity<>(expenseRepo.findByDateBetween(start, today), HttpStatus.OK);
 
             case "past3months":
                 start = today.minusMonths(3);
-                return expenseRepo.findByDateBetween(start, today);
+                return new ResponseEntity<>(expenseRepo.findByDateBetween(start, today), HttpStatus.OK);
 
             case "custom":
                 if (startDate != null && endDate != null) {
-                    return expenseRepo.findByDateBetween(startDate, endDate);
+                    return new ResponseEntity<>(expenseRepo.findByDateBetween(startDate, endDate), HttpStatus.OK);
                 } else {
                     throw new IllegalArgumentException("custom filter requires start and end date");
                 }
