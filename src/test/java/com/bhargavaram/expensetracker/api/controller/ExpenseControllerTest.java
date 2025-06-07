@@ -18,8 +18,8 @@ import java.util.ArrayList;
 
 import static com.bhargavaram.expensetracker.api.model.Expense.Category.GROCERIES;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExpenseControllerTest {
@@ -65,6 +65,66 @@ class ExpenseControllerTest {
                 .andExpect(jsonPath("$[0].description").value("sample expense 1"))
                 .andExpect(jsonPath("$[0].amount").value(200))
                 .andExpect(jsonPath("$[0].category").value("GROCERIES"));
+
+    }
+
+    @Test
+    public void addExpenseShouldNotAddExpenseIfNotAuthorized() throws Exception {
+
+        String token = "sample_token";
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(false);
+
+        mockMvc.perform(post("/expense/track/add")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"description\": \"sample expense 1\", \"amount\": 200, \"category\": \"GROCERIES\"}"))
+                .andExpect(status().isUnauthorized());
+
+
+    }
+
+    @Test
+    public void deleteExpenseShouldDeleteExpense() throws Exception {
+
+        String token = "sample_token";
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(true);
+        Mockito.when(expenseService.deleteExpense(Mockito.anyInt())).thenReturn(true);
+
+        mockMvc.perform(put("/expense/track/delete/1")
+                .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Deleted task with ID: 1 successfully!"));
+
+    }
+
+    @Test
+    public void deleteExpenseShouldNotDeleteIfIdDoesNotExist() throws Exception {
+
+        String token = "sample_token";
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(true);
+        Mockito.when(expenseService.deleteExpense(Mockito.anyInt())).thenReturn(false);
+
+
+        mockMvc.perform(put("/expense/track/delete/1")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Task ID: 1 not found, please enter valid task ID"));
+
+    }
+
+    @Test
+    public void deleteTaskShouldNotDeleteIfNotAuthorized() throws Exception {
+
+        String token = "sample_token";
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(false);
+
+        mockMvc.perform(put("/expense/track/delete/1")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
 
     }
 
