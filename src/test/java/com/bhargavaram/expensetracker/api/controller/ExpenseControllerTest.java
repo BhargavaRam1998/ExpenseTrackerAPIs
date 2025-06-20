@@ -116,7 +116,7 @@ class ExpenseControllerTest {
     }
 
     @Test
-    public void deleteTaskShouldNotDeleteIfNotAuthorized() throws Exception {
+    public void deleteExpenseShouldNotDeleteIfNotAuthorized() throws Exception {
 
         String token = "sample_token";
 
@@ -124,6 +124,44 @@ class ExpenseControllerTest {
 
         mockMvc.perform(put("/expense/track/delete/1")
                         .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Test
+    public void updateExpenseShouldUpdateExpense() throws Exception {
+
+         String token = "sample_token";
+
+        Expense expense = new Expense();
+        expense.setDescription("sample expense 1");
+        expense.setAmount(200);
+        expense.setCategory(GROCERIES);
+
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(true);
+        Mockito.when(expenseService.updateExpense(Mockito.anyInt(), Mockito.any(Expense.class))).thenReturn(expense);
+
+        mockMvc.perform(put("/expense/track/update/1")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"description\": \"sample expense 1\", \"amount\": 200, \"category\": \"GROCERIES\"}"))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    public void updateExpenseShouldNotUpdateExpenseIfUnauthorized() throws Exception {
+
+        String token = "sample_token";
+
+        Mockito.when(jwtUtil.isAuthorized(Mockito.any())).thenReturn(false);
+
+
+        mockMvc.perform(put("/expense/track/update/1")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"description\": \"sample expense 1\", \"amount\": 200, \"category\": \"GROCERIES\"}"))
                 .andExpect(status().isUnauthorized());
 
     }
